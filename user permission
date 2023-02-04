@@ -1,0 +1,35 @@
+from django.contrib.auth.decorators import permission_required
+
+@permission_required('crud.view_user')
+def user_list(request):
+    users = User.objects.all()
+    return render(request, 'crud/user_list.html', {'users': users})
+
+@permission_required('crud.add_user')
+def user_create(request):
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('crud:user_list')
+    else:
+        form = UserForm()
+    return render(request, 'crud/user_form.html', {'form': form})
+
+@permission_required('crud.change_user')
+def user_update(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('crud:user_list')
+    else:
+        form = UserForm(instance=user)
+    return render(request, 'crud/user_form.html', {'form': form})
+
+@permission_required('crud.delete_user')
+def user_delete(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    user.delete()
+    return redirect('crud:user_list')

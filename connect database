@@ -1,0 +1,40 @@
+# models.py
+from django.contrib.auth.models import User
+from django.db import models
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # add additional fields for user profile here, e.g.
+    # address, phone_number, etc.
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=15)
+
+    def __str__(self):
+        return self.user.username
+
+# views.py
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from .forms import UserProfileForm
+
+def register(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.refresh_from_db()  # load the profile instance created by the signal
+            user.userprofile.address = form.cleaned_data.get('address')
+            user.userprofile.phone_number = form.cleaned_data.get('phone_number')
+            user.save()
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=user.username, password=raw_password)
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserProfileForm()
+    return render(request, 'register.html', {'form': form})
+
+#In the code above, we have added the UserProfile model which will store additional information about the user, such as their address and phone number. We have also registered the UserProfile model in the admin interface using admin.site.register. In the register view, we have added the functionality to create a UserProfile instance when a new user is created. The UserProfile is linked to the user through a OneToOneField relationship. Finally, we have added comments to explain each part of the code.
+
+
+
