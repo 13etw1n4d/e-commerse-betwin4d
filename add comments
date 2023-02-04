@@ -1,0 +1,62 @@
+# views.py
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404, redirect
+
+# The login_required decorator ensures that only logged-in users can access this view
+# The permission_required decorator ensures that only users with the specified permission can access this view
+@login_required
+@permission_required('auth.view_user')
+def user_list(request):
+    # Get a list of all User objects
+    users = User.objects.all()
+    # Render the user_list.html template, passing the list of users as context
+    return render(request, 'user_list.html', {'users': users})
+
+@login_required
+@permission_required('auth.view_user')
+def user_detail(request, pk):
+    # Get a single User object with the specified primary key (pk)
+    user = get_object_or_404(User, pk=pk)
+    # Render the user_detail.html template, passing the user as context
+    return render(request, 'user_detail.html', {'user': user})
+
+@login_required
+@permission_required('auth.add_user')
+def user_create(request):
+    if request.method == 'POST':
+        # If the request method is POST, the form has been submitted
+        form = UserForm(request.POST)
+        if form.is_valid():
+            # If the form is valid, save the new user
+            user = form.save()
+            # Redirect to the user detail view for the new user
+            return redirect('user_detail', pk=user.pk)
+    else:
+        # If the request method is not POST, create a new form
+        form = UserForm()
+    # Render the user_form.html template, passing the form as context
+    return render(request, 'user_form.html', {'form': form})
+
+@login_required
+@permission_required('auth.change_user')
+def user_update(request, pk):
+    # Get the user to be updated with the specified primary key (pk)
+    user = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        # If the request method is POST, the form has been submitted
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            # If the form is valid, save the updated user
+            user = form.save()
+            # Redirect to the user detail view for the updated user
+            return redirect('user_detail', pk=user.pk)
+    else:
+        # If the request method is not POST, create a form with the current user data
+        form = UserForm(instance=user)
+    # Render the user_form.html template, passing the form as context
+    return render(request, 'user_form.html', {'form': form})
+
+@login_required
+@permission_required('auth.delete_user')
+def user_delete(request, pk):
