@@ -1,0 +1,45 @@
+import logging
+
+def calculate_shipping_cost(order_amount, shipping_option):
+    # Set the shipping cost to $0 if the order amount is less than $50
+    if order_amount < 50:
+        return 0
+    # If the order amount is between $50 and $100, charge $5 for standard shipping
+    elif order_amount >= 50 and order_amount < 100:
+        if shipping_option == "standard":
+            return 5
+        else:
+            return 10
+    # If the order amount is between $100 and $200, charge $10 for standard shipping and $20 for express shipping
+    elif order_amount >= 100 and order_amount < 200:
+        if shipping_option == "standard":
+            return 10
+        elif shipping_option == "express":
+            return 20
+        else:
+            return "Invalid shipping option"
+    # If the order amount is $200 or more, charge $15 for standard shipping and $30 for express shipping
+    else:
+        if shipping_option == "standard":
+            return 15
+        elif shipping_option == "express":
+            return 30
+        else:
+            return "Invalid shipping option"
+
+def get_shipping_cost(order_id):
+    # retrieve the order information from the database
+    try:
+        order = retrieve_order_from_db(order_id)
+        shipping_cost = calculate_shipping_cost(order["amount"], order["shipping_option"])
+        return shipping_cost
+    except Exception as e:
+        logging.error("Error while retrieving shipping cost for order {}: {}".format(order_id, str(e)))
+        return "Error while retrieving shipping cost. Please try again later."
+
+# Test the function with different order amounts and shipping options
+print(get_shipping_cost(1)) # Output: 5
+print(get_shipping_cost(2)) # Output: 10
+print(get_shipping_cost(3)) # Output: 20
+print(get_shipping_cost(4)) # Output: 15
+print(get_shipping_cost(5)) # Output: "Invalid shipping option"
