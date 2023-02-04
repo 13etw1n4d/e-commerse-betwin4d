@@ -1,0 +1,24 @@
+# models.py (no changes)
+
+# views.py
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def product_list(request):
+    products = Product.objects.all()
+    return render(request, 'products.html', {'products': products})
+
+@login_required
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, 'product_detail.html', {'product': product})
+
+# urls.py
+from django.contrib.auth import views as auth_views
+
+urlpatterns = [
+    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('', views.product_list, name='product_list'),
+    path('<int:pk>/', views.product_detail, name='product_detail'),
+]
